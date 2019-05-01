@@ -1,7 +1,10 @@
 package com.bladejava.models;
 
 import io.github.biezhi.anima.Model;
+import io.github.biezhi.anima.annotation.Table;
 
+
+@Table(name = "xuezha")
 public class xuezha extends Model{
     private int id;
     private String stuid;
@@ -9,6 +12,10 @@ public class xuezha extends Model{
     private String college;
     private String qqmail;
 
+
+    public xuezha(){
+
+    }
 
     public xuezha(String stuid, String name, String college, String qqmail) {
         this.stuid = stuid;

@@ -18,6 +18,8 @@ import java.util.HashMap;
 @Path("zixi")
 public class zixiController {
 
+
+    @com.blade.mvc.annotation.JSON
     @PostRoute
     public String zixiLogin(Request request){
         JSONObject jsonParams= com.alibaba.fastjson.JSON.parseObject(request.bodyToString());
@@ -26,21 +28,25 @@ public class zixiController {
         String qqmail=jsonParams.getString("qqmail");
         String name=jsonParams.getString("name");
         String time=jsonParams.getString("time");
+        System.out.println("name is "+name);
+        System.out.println("stuid is"+stuid);
+        System.out.println(Anima.select().from(zixitongzuo.class).where("stuid",stuid).one()==null);
         if(Anima.select().from(zixitongzuo.class).where("stuid",stuid).one()==null){
             Anima.save(new zixitongzuo(stuid,name,college,qqmail));
         }
         meetservice meetservice=Anima.select().from(com.bladejava.models.meetservice.class)
-                .notNull("stuid1")
-                .where("stuid2",null)
-                .notNull("launchtime")
-                .where("matchtime",null)
-                .where("time",time)
-                .where("complete",null).one();
+                .notEq("stuid1","0")
+                .where("stuid2","0")
+                .notEq("launchtime","0")
+                .where("matchtime","0")
+                .where("meettime",time)
+                .where("complete","-1").one();
         if(meetservice!=null){
             //进行update
-            Anima.update().from(com.bladejava.models.meetservice.class).byId(meetservice.getId())
+            Anima.update().from(meetservice.class)
                     .set("stuid2",stuid)
-                    .set("matchtime",System.currentTimeMillis()+"");
+                    .set("matchtime",System.currentTimeMillis()+"")
+                    .where("id",meetservice.getId()).execute();
         }
         else {
             Anima.save(new meetservice(stuid,time,System.currentTimeMillis()+""));
@@ -49,15 +55,19 @@ public class zixiController {
         return JSON.toJSONString(new responseStatus<>("ok"));
     }
 
+
+    @com.blade.mvc.annotation.JSON
     @PostRoute("match")
     public String zixiMatch(Request request){
         meetservice usingService= getService.meetserviceGet(request);
         int status=Match.checkTongzuoProcess(usingService);
         HashMap<String,Object> response=new HashMap<>();
         response.put("match",status);
+        System.out.println(status);
         return JSON.toJSONString(new responseStatus<>(response));
     }
 
+    @com.blade.mvc.annotation.JSON
     @PostRoute("getMatchInformation")
     public String zixigetMatchInformation(Request request){
         meetservice usingService=getService.meetserviceGet(request);
@@ -95,14 +105,17 @@ public class zixiController {
         return JSON.toJSONString(new responseStatus<>(response));
     }
 
+
+    @com.blade.mvc.annotation.JSON
     @PostRoute("finishMeeting")
     public String zixifinishMeeting(Request request){
         JSONObject jsonParams= com.alibaba.fastjson.JSON.parseObject(request.bodyToString());
         String stuid=jsonParams.getString("stuid");
         meetservice meetservice=getService.meetserviceGet(request);
-        Anima.update().from(com.bladejava.models.meetservice.class).byId(meetservice.getId())
+        Anima.update().from(com.bladejava.models.meetservice.class)
                 .set("finishtime",System.currentTimeMillis()+"")
-                .set("complete",1);
+                .set("complete",1)
+                .where("id",meetservice.getId()).execute();
         return JSON.toJSONString(new responseStatus<>("ok"));
     }
 }

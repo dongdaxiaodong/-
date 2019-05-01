@@ -2,6 +2,7 @@ package com.bladejava.models;
 
 
 import io.github.biezhi.anima.Model;
+import io.github.biezhi.anima.annotation.Column;
 import io.github.biezhi.anima.annotation.Table;
 
 @Table(name = "helpservice")
@@ -12,10 +13,14 @@ public class helpservice extends Model{
     private String course;
     private String imgurl;
     private String launchtime;
+    @Column(name = "matchtime")
     private String matchtime;
     private String finishtime;
-    private int complete;
+    private String complete;
 
+    public helpservice(){
+
+    }
 
     public helpservice(String givestuid,String course,String launchtime){
         this.givestuid=givestuid;
@@ -91,11 +96,11 @@ public class helpservice extends Model{
         this.finishtime = finishtime;
     }
 
-    public int getComplete() {
+    public String getComplete() {
         return complete;
     }
 
-    public void setComplete(int complete) {
+    public void setComplete(String complete) {
         this.complete = complete;
     }
 }

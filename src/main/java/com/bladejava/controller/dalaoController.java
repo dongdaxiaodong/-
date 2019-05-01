@@ -14,10 +14,11 @@ import io.github.biezhi.anima.Anima;
 import com.bladejava.models.dalao;
 import java.util.HashMap;
 import com.bladejava.utils.getService;
-import java.util.List;
 
 @Path("dalao")
 public class dalaoController {
+
+    @com.blade.mvc.annotation.JSON
     @PostRoute
     public String dalaoLogin(Request request){
         //登录需要知道是否已经存在,所以需要判断一次，其次，service看是否complete
@@ -32,17 +33,18 @@ public class dalaoController {
         }
         //然后进行匹配
         helpservice helpservice=Anima.select().from(helpservice.class)
-                .notNull("getstuid")
-                .where("givestuid",null)
-                .notNull("launchtime")
-                .where("matchtime",null)
+                .notEq("getstuid","0")
+                .where("givestuid","0")
+                .notEq("launchtime","0")
+                .where("matchtime","0")
                 .where("course",course)
-                .where("complete",null).one();
+                .where("complete","-1").one();
         if(helpservice!=null){
             //进行update
-            Anima.update().from(com.bladejava.models.helpservice.class).byId(helpservice.getId())
+            Anima.update().from(helpservice.class)
                     .set("givestuid",stuid)
-                    .set("matchtime",System.currentTimeMillis()+"");
+                    .set("matchtime",System.currentTimeMillis()+"")
+                    .where("id",helpservice.getId()).execute();
         }
         else {
             Anima.save(new helpservice(stuid,course,System.currentTimeMillis()+""));
@@ -51,18 +53,25 @@ public class dalaoController {
         return JSON.toJSONString(new responseStatus<>("ok"));
      }
 
+     @com.blade.mvc.annotation.JSON
     @PostRoute("match")
     public String dalaoMatch(Request request){
-        helpservice usingService=getService.helpserviceByDalao(request);
+        JSONObject jsonParams= com.alibaba.fastjson.JSON.parseObject(request.bodyToString());
+        String stuid=jsonParams.getString("stuid");
+        helpservice usingService=getService.helpserviceByDalao(stuid);
         int status=Match.checkProcess(usingService);
         HashMap<String,Object> response=new HashMap<>();
         response.put("match",status);
+        System.out.println("status is "+status);
         return JSON.toJSONString(new responseStatus<>(response));
     }
 
+    @com.blade.mvc.annotation.JSON
     @PostRoute("getMatchInformation")
     public String dalaogetMatchInformation(Request request){
-        helpservice usingService=getService.helpserviceByDalao(request);
+        JSONObject jsonParams= com.alibaba.fastjson.JSON.parseObject(request.bodyToString());
+        String stuid=jsonParams.getString("stuid");
+        helpservice usingService=getService.helpserviceByDalao(stuid);
         String xuezhastuid=usingService.getGetstuid();
         xuezha xuezha=Anima.select().from(com.bladejava.models.xuezha.class)
                 .where("stuid",xuezhastuid).one();
@@ -77,16 +86,20 @@ public class dalaoController {
         return JSON.toJSONString(new responseStatus<>(response));
     }
 
+    @com.blade.mvc.annotation.JSON
     @PostRoute("finishMeeting")
     public String dalaoFinishMeeting(Request request){
         JSONObject jsonParams= com.alibaba.fastjson.JSON.parseObject(request.bodyToString());
         String stuid=jsonParams.getString("stuid");
+        System.out.println("stuid is"+stuid);
         String imgUrl=jsonParams.getString("imgUrl");
-        helpservice usingService=getService.helpserviceByDalao(request);
-        Anima.update().from(helpservice.class).byId(usingService.getId())
+        System.out.println("imgurl is "+imgUrl);
+        helpservice usingService=getService.helpserviceByDalao(stuid);
+        Anima.update().from(helpservice.class)
                 .set("finishtime",System.currentTimeMillis()+"")
                 .set("complete",1)
-                .set("imgurl",imgUrl);
+                .set("imgurl",imgUrl)
+                .where("id",usingService.getId()).execute();
         return JSON.toJSONString(new responseStatus<>("ok"));
     }
 }

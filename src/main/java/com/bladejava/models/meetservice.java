@@ -1,17 +1,24 @@
 package com.bladejava.models;
 import io.github.biezhi.anima.Model;
+import io.github.biezhi.anima.annotation.Column;
 import io.github.biezhi.anima.annotation.Table;
 @Table(name = "meetservice")
 public class meetservice extends Model{
     private int id;
+    @Column(name = "stuid1")
     private String stuid1;
+    @Column(name = "stuid2")
     private String stuid2;
     private String meettime;//自习日期
     private String launchtime;
     private String matchtime;
     private String finishtime;
-    private int complete;
+    private String  complete;
     private String imgurl;
+
+    public meetservice(){
+
+    }
 
     public meetservice(String stuid1, String meettime, String launchtime) {
         this.stuid1 = stuid1;
@@ -75,11 +82,11 @@ public class meetservice extends Model{
         this.finishtime = finishtime;
     }
 
-    public int getComplete() {
+    public String  getComplete() {
         return complete;
     }
 
-    public void setComplete(int complete) {
+    public void setComplete(String complete) {
         this.complete = complete;
     }
 

@@ -18,6 +18,8 @@ import java.util.HashMap;
 @Path("xuezha")
 public class xuezhaController {
 
+
+    @com.blade.mvc.annotation.JSON
     @PostRoute
     public String xuezhaLogin(Request request){
         JSONObject jsonParams= com.alibaba.fastjson.JSON.parseObject(request.bodyToString());
@@ -31,16 +33,17 @@ public class xuezhaController {
         }
         //然后进行匹配
         helpservice helpservice=Anima.select().from(helpservice.class)
-                .notNull("givestuid")
-                .where("getstuid",null)
-                .notNull("launchtime")
-                .where("matchtime",null)
+                .notEq("givestuid","0")
+                .where("getstuid","0")
+                .notEq("launchtime","0")
+                .where("matchtime","0")
                 .where("course",course)
-                .where("complete",null).one();
+                .where("complete","-1").one();
         if(helpservice!=null){
-            Anima.update().from(com.bladejava.models.helpservice.class).byId(helpservice.getId())
+            Anima.update().from(helpservice.class)
                     .set("getstuid",stuid)
-                    .set("matchtime",System.currentTimeMillis()+"");
+                    .set("matchtime",System.currentTimeMillis()+"")
+                    .where("id", helpservice.getId()).execute();
         }
         else {
             Anima.save(new helpservice(stuid,course,System.currentTimeMillis()+"",2));
@@ -49,18 +52,25 @@ public class xuezhaController {
         return JSON.toJSONString(new responseStatus<>("ok"));
     }
 
+
+    @com.blade.mvc.annotation.JSON
     @PostRoute("match")
     public String xuezhaMatch(Request request){
-        helpservice usingService= getService.helpserviceByXuezha(request);
+        JSONObject jsonParams= com.alibaba.fastjson.JSON.parseObject(request.bodyToString());
+        String stuid=jsonParams.getString("stuid");
+        helpservice usingService= getService.helpserviceByXuezha(stuid);
         int status=Match.checkProcess(usingService);
         HashMap<String,Object> response=new HashMap<>();
         response.put("match",status);
         return JSON.toJSONString(new responseStatus<>(response));
     }
 
+    @com.blade.mvc.annotation.JSON
     @PostRoute("getMatchInformation")
     public String xuezhaGetMatchInformation(Request request){
-        helpservice usingService=getService.helpserviceByXuezha(request);
+        JSONObject jsonParams= com.alibaba.fastjson.JSON.parseObject(request.bodyToString());
+        String stuid=jsonParams.getString("stuid");
+        helpservice usingService=getService.helpserviceByXuezha(stuid);
         String dalaostuid=usingService.getGivestuid();
         dalao dalao=Anima.select().from(com.bladejava.models.dalao.class).where("stuid",dalaostuid).one();
         String matchName=dalao.getName();
@@ -74,12 +84,17 @@ public class xuezhaController {
         return JSON.toJSONString(new responseStatus<>(response));
     }
 
+
+    @com.blade.mvc.annotation.JSON
     @PostRoute("finishMeeting")
     public String xuezhafinishMeeting(Request request){
-        helpservice usingService=getService.helpserviceByXuezha(request);
-        Anima.update().from(helpservice.class).byId(usingService.getId())
+        JSONObject jsonParams= com.alibaba.fastjson.JSON.parseObject(request.bodyToString());
+        String stuid=jsonParams.getString("stuid");
+        helpservice usingService=getService.helpserviceByXuezha(stuid);
+        Anima.update().from(helpservice.class)
                 .set("finishtime",System.currentTimeMillis()+"")
-                .set("complete",1);
+                .set("complete",1)
+                .where("id",usingService.getId()).execute();
         return JSON.toJSONString(new responseStatus<>("ok"));
     }
 }
