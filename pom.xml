@@ -45,6 +45,11 @@
             <artifactId>blade-mvc</artifactId>
             <version>${blade.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.github.biezhi</groupId>
+            <artifactId>oh-my-email</artifactId>
+            <version>0.0.4</version>
+        </dependency>
 
         <dependency>
             <groupId>io.github.biezhi</groupId>

@@ -7,11 +7,12 @@ import com.blade.mvc.annotation.PostRoute;
 import com.blade.mvc.http.Request;
 import com.bladejava.models.meetservice;
 import com.bladejava.utils.getService;
-
 import com.bladejava.utils.Match;
+import com.bladejava.utils.mailSend.SendMail;
 import com.bladejava.utils.responseStatus;
 import io.github.biezhi.anima.Anima;
 import com.bladejava.models.zixitongzuo;
+import io.github.biezhi.ome.SendMailException;
 
 import java.util.HashMap;
 
@@ -21,7 +22,7 @@ public class zixiController {
 
     @com.blade.mvc.annotation.JSON
     @PostRoute
-    public String zixiLogin(Request request){
+    public String zixiLogin(Request request)throws SendMailException{
         JSONObject jsonParams= com.alibaba.fastjson.JSON.parseObject(request.bodyToString());
         String stuid=jsonParams.getString("stuid");
         String college=jsonParams.getString("college");
@@ -47,6 +48,10 @@ public class zixiController {
                     .set("stuid2",stuid)
                     .set("matchtime",System.currentTimeMillis()+"")
                     .where("id",meetservice.getId()).execute();
+            zixitongzuo tongzuo=Anima.select().from(zixitongzuo.class)
+                    .where("stuid",meetservice.getStuid1()).one();
+            SendMail.sendMailToTongZuo(qqmail,tongzuo.getQqmail());
+            SendMail.sendMailToTongZuo(tongzuo.getQqmail(),qqmail);
         }
         else {
             Anima.save(new meetservice(stuid,time,System.currentTimeMillis()+""));

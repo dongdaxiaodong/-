@@ -6,6 +6,7 @@ import com.blade.ioc.annotation.Bean;
 import com.blade.loader.BladeLoader;
 import com.blade.mvc.view.template.JetbrickTemplateEngine;
 import io.github.biezhi.anima.Anima;
+import io.github.biezhi.ome.OhMyEmail;
 
 @Bean
 public class StartUpConfig implements BladeLoader {
@@ -19,6 +20,7 @@ public class StartUpConfig implements BladeLoader {
         dataSource.setUsername(blade.environment().getOrNull("jdbc.username"));
         dataSource.setPassword(blade.environment().getOrNull("jdbc.password"));
         Anima.open(dataSource);
+        OhMyEmail.config(OhMyEmail.SMTP_QQ(true),"1346536639@qq.com","vdhhqbliszueihfi");
 
     }
 }

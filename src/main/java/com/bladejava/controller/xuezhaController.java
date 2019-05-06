@@ -10,9 +10,12 @@ import com.bladejava.models.dalao;
 import com.bladejava.models.helpservice;
 import com.bladejava.utils.Match;
 import com.bladejava.utils.getService;
+import com.bladejava.utils.mailSend.SendMail;
 import com.bladejava.utils.responseStatus;
 import io.github.biezhi.anima.Anima;
 import com.bladejava.models.xuezha;
+import io.github.biezhi.ome.SendMailException;
+
 import java.util.HashMap;
 
 @Path("xuezha")
@@ -21,7 +24,7 @@ public class xuezhaController {
 
     @com.blade.mvc.annotation.JSON
     @PostRoute
-    public String xuezhaLogin(Request request){
+    public String xuezhaLogin(Request request)throws SendMailException{
         JSONObject jsonParams= com.alibaba.fastjson.JSON.parseObject(request.bodyToString());
         String stuid=jsonParams.getString("stuid");
         String college=jsonParams.getString("college");
@@ -44,6 +47,10 @@ public class xuezhaController {
                     .set("getstuid",stuid)
                     .set("matchtime",System.currentTimeMillis()+"")
                     .where("id", helpservice.getId()).execute();
+            dalao dalao=Anima.select().from(com.bladejava.models.dalao.class)
+                    .where("stuid",helpservice.getGivestuid()).one();
+            SendMail.sendMailToDaka(dalao.getQqmail(),qqmail);
+            SendMail.sendMailToUser(qqmail,dalao.getQqmail());
         }
         else {
             Anima.save(new helpservice(stuid,course,System.currentTimeMillis()+"",2));

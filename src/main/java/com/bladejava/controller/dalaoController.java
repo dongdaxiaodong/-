@@ -9,18 +9,20 @@ import com.blade.mvc.http.Request;
 import com.bladejava.models.helpservice;
 import com.bladejava.models.xuezha;
 import com.bladejava.utils.Match;
+import com.bladejava.utils.mailSend.SendMail;
 import com.bladejava.utils.responseStatus;
 import io.github.biezhi.anima.Anima;
 import com.bladejava.models.dalao;
 import java.util.HashMap;
 import com.bladejava.utils.getService;
+import io.github.biezhi.ome.SendMailException;
 
 @Path("dalao")
 public class dalaoController {
 
     @com.blade.mvc.annotation.JSON
     @PostRoute
-    public String dalaoLogin(Request request){
+    public String dalaoLogin(Request request)throws SendMailException{
         //登录需要知道是否已经存在,所以需要判断一次，其次，service看是否complete
         JSONObject jsonParams= com.alibaba.fastjson.JSON.parseObject(request.bodyToString());
         String stuid=jsonParams.getString("stuid");
@@ -45,6 +47,12 @@ public class dalaoController {
                     .set("givestuid",stuid)
                     .set("matchtime",System.currentTimeMillis()+"")
                     .where("id",helpservice.getId()).execute();
+            //todo--发送邮件
+            xuezha xuezha=Anima.select().from(com.bladejava.models.xuezha.class)
+                    .where("stuid",helpservice.getGetstuid()).one();
+            SendMail.sendMailToDaka(qqmail,xuezha.getQqmail());
+            SendMail.sendMailToUser(xuezha.getQqmail(),qqmail);
+
         }
         else {
             Anima.save(new helpservice(stuid,course,System.currentTimeMillis()+""));
